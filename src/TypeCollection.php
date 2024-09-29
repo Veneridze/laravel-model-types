@@ -1,12 +1,13 @@
 <?php
 namespace Veneridze\ModelTypes;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Config;
 use Veneridze\ModelTypes\Exceptions\EmptyModelTypeCollection;
 use Veneridze\ModelTypes\Exceptions\UnknownTypeCollection;
 use Veneridze\ModelTypes\Exceptions\WrongTypeException;
 use Veneridze\ModelTypes\Interfaces\TypeInterface;
 
-class TypeCollection {
+class TypeCollection implements Arrayable {
     readonly array $types;
     public function __construct(string $type) {
         $this->types = Config::get("types.{$type}");
@@ -22,6 +23,10 @@ class TypeCollection {
         $name = strtolower($name);
         return count(array_filter($this->types, fn(string $type) => strtolower(basename($type)) == $name)) > 0;
     
+    }
+
+    public function toArray(): array {
+        return $this->types;
     }
     //TypeInterface | 
     public function __get(string $name): string {

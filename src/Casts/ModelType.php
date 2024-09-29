@@ -13,7 +13,7 @@ class ModelType implements CastsAttributes
      * @param  array<string, mixed>  $attributes
      * @return array<string, mixed>
      */
-    public function get(Model $model, string $key, mixed $value, array $attributes): array
+    public function get(Model $model, string $key, mixed $value, array $attributes): string
     {        
         return $model->typeCollection()->$value;
     }
@@ -25,6 +25,6 @@ class ModelType implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): string
     {
-        return $value;
+        return strtolower(basename($value));
     }
 }
