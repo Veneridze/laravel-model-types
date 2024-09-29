@@ -32,6 +32,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
+        "php": ">=8.2",
         "laravel/framework": "^11.25",
         "spatie/laravel-package-tools": "^1.16"
     },
