@@ -1,20 +1,22 @@
 <?php
 namespace Veneridze\ModelTypes;
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Config;
 use Veneridze\ModelTypes\Exceptions\EmptyModelTypeCollection;
 use Veneridze\ModelTypes\Exceptions\UnknownTypeCollection;
 use Veneridze\ModelTypes\Exceptions\WrongTypeException;
-use Veneridze\ModelTypes\Interfaces\TypeInterface;
 
-class TypeCollection implements Arrayable {
+class TypeCollection implements Arrayable, ValidationRule {
     readonly array $types;
-    public function __construct(string $type) {
+    public function __construct(private string $type) {
         $this->types = Config::get("types.{$type}");
         if(is_null($this->types)) {
             throw new UnknownTypeCollection("Коллекция типов {$type} не существует", 500);
         }
     }
+    
     /**
      * Summary of getType
      * @param string $name
@@ -23,6 +25,17 @@ class TypeCollection implements Arrayable {
         $name = strtolower($name);
         return count(array_filter($this->types, fn(string $type) => strtolower(basename($type)) == $name)) > 0;
     
+    }
+
+    /**
+     * Run the validation rule.
+     */
+    public function validate(string $attribute, mixed $value, Closure $fail): void
+    {
+        $value = strtolower(basename($value));
+        if (!isset($this->$value)) {
+            $fail("Тип {$value} не существует в коллекции {$this->type}");
+        }
     }
 
     public function toArray(): array {
