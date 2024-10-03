@@ -46,7 +46,7 @@ class TypeCollection implements Arrayable, ValidationRule {
         $name = strtolower($name);
         $search = array_values(array_filter($this->types, fn(string $type) => strtolower(basename($type)) == $name));
         if(count($search) == 0) {
-            throw new WrongTypeException("Тип {$name} не существует в коллекции {$this->typeSpace}", 500);
+            throw new WrongTypeException("Тип {$name} не существует в коллекции {$this->type}", 500);
         }
 
         return $search[0];
