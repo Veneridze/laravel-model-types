@@ -13,7 +13,7 @@ use Veneridze\ModelTypes\Exceptions\WrongTypeException;
 class TypeCollection implements Arrayable, ValidationRule {
     readonly array $types;
     public function __construct(private string $type) {
-        $this->types = Config::get("types.{$type}");
+        $this->types = Config::get("model-types.{$type}");
         if(is_null($this->types)) {
             throw new UnknownTypeCollection("Коллекция типов {$type} не существует", 500);
         }
