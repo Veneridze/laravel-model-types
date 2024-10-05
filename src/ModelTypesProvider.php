@@ -2,6 +2,7 @@
 namespace Veneridze\ModelTypes;
 
 
+use Illuminate\Database\Console\Migrations\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -11,14 +12,14 @@ class ModelTypesProvider extends PackageServiceProvider
     {
         $package
             ->name('laravel-model-types')
-            ->hasConfigFile('types');
-            //->hasMigration('create_media_table')
-            //->hasViews('media-library')
-            //->hasCommands([
-            //    RegenerateCommand::class,
-            //    ClearCommand::class,
-            //    CleanCommand::class,
-            //]);
+            ->hasConfigFile()
+            ->publishesServiceProvider('ModelTypeProvider')
+            ->hasInstallCommand(function(InstallCommand $command) {
+                $command
+                    ->publishConfigFile()
+                    ->publishMigrations()
+                    ->copyAndRegisterServiceProviderInApp();
+            });
     }
 
     public function packageBooted(): void
