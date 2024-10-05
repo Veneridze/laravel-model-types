@@ -1,9 +1,11 @@
 <?php
 namespace Veneridze\ModelTypes;
 use Closure;
+use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Config;
+use ReflectionClass;
 use Veneridze\ModelTypes\Exceptions\EmptyModelTypeCollection;
 use Veneridze\ModelTypes\Exceptions\UnknownTypeCollection;
 use Veneridze\ModelTypes\Exceptions\WrongTypeException;
@@ -23,7 +25,7 @@ class TypeCollection implements Arrayable, ValidationRule {
      */
     public function __isset(string $name): bool {
         $name = strtolower($name);
-        return count(array_filter($this->types, fn(string $type) => strtolower(basename($type)) == $name)) > 0;
+        return count(array_filter($this->types, fn(string $type) => strtolower((new ReflectionClass($type))->getShortName()) == $name)) > 0;
     
     }
 
@@ -44,8 +46,9 @@ class TypeCollection implements Arrayable, ValidationRule {
     //TypeInterface | 
     public function __get(string $name): string {
         $name = strtolower($name);
-        $search = array_values(array_filter($this->types, fn(string $type) => strtolower(basename($type)) == strtolower($name)));
+        $search = array_values(array_filter($this->types, fn(string $type) =>  strtolower((new ReflectionClass($type))->getShortName()) == strtolower($name)));
         if(count($search) == 0) {
+            //throw new Exception(strtolower(basename($this->types[0])));
             throw new WrongTypeException("Тип {$name} не существует в коллекции {$this->type}".PHP_EOL."Доступно типов:".count($this->types), 500);
         }
 
