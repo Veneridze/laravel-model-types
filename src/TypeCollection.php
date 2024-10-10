@@ -40,6 +40,31 @@ class TypeCollection implements Arrayable, ValidationRule {
         }
     }
 
+    public function toSelect(): array {
+        return array_map(function($type): array {
+            $short = strtolower((new ReflectionClass($type))->getShortName());
+            return [
+                "label" => property_exists($type, 'label') ? $type::$label :  $short,
+                "value" => $short
+            ];
+        }, $this->types);
+    }
+    public function toForm(string $key, string $property = 'fields', array $visibleif = []): array {
+        return array_map(fn($type) => 
+            method_exists($type, $property) ?array_map(function($field) use ($type, $visibleif, $key) {
+                $field->visibleif =  [
+                    ...($field->visibleif ?? []),
+                    ...($visibleif ?? []),
+                    ...[
+                        $key => strtolower((new ReflectionClass($type))->getShortName())
+                    ]
+                ];
+                return $field;
+            }, $type::$property()) : [], 
+        $this->types); 
+
+    }
+
     public function toArray(): array {
         return $this->types;
     }
