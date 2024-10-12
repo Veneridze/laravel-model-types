@@ -49,6 +49,11 @@ class TypeCollection implements Arrayable, ValidationRule {
             ];
         }, $this->types);
     }
+
+    //public function toValidationRules() {
+    //
+    //}
+
     public function toForm(string $key, string $property = 'fields', array $visibleif = []): array {
         return array_map(fn($type) => 
             method_exists($type, $property) ?array_map(function($field) use ($type, $visibleif, $key) {
