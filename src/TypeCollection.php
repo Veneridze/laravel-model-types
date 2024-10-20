@@ -1,5 +1,7 @@
 <?php
+
 namespace Veneridze\ModelTypes;
+
 use Closure;
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
@@ -10,23 +12,25 @@ use Veneridze\ModelTypes\Exceptions\EmptyModelTypeCollection;
 use Veneridze\ModelTypes\Exceptions\UnknownTypeCollection;
 use Veneridze\ModelTypes\Exceptions\WrongTypeException;
 
-class TypeCollection implements Arrayable, ValidationRule {
+class TypeCollection implements Arrayable, ValidationRule
+{
     readonly array $types;
-    public function __construct(private string $type) {
+    public function __construct(private string $type)
+    {
         $this->types = Config::get("model-types.{$type}");
-        if(is_null($this->types)) {
+        if (is_null($this->types)) {
             throw new UnknownTypeCollection("Коллекция типов {$type} не существует", 500);
         }
     }
-    
+
     /**
      * Summary of getType
      * @param string $name
      */
-    public function __isset(string $name): bool {
+    public function __isset(string $name): bool
+    {
         $name = strtolower($name);
         return count(array_filter($this->types, fn(string $type) => strtolower((new ReflectionClass($type))->getShortName()) == $name)) > 0;
-    
     }
 
     /**
@@ -40,8 +44,9 @@ class TypeCollection implements Arrayable, ValidationRule {
         }
     }
 
-    public function toSelect(): array {
-        return array_map(function($type): array {
+    public function toSelect(): array
+    {
+        return array_map(function ($type): array {
             $short = strtolower((new ReflectionClass($type))->getShortName());
             return [
                 "label" => property_exists($type, 'label') ? $type::$label :  $short,
@@ -54,32 +59,45 @@ class TypeCollection implements Arrayable, ValidationRule {
     //
     //}
 
-    public function toForm(string $key, string $property = 'fields', array $visibleif = []): array {
-        return array_map(fn($type) => 
-            method_exists($type, $property) ?array_map(function($field) use ($type, $visibleif, $key) {
-                $field->visibleif =  [
-                    ...($field->visibleif ?? []),
-                    ...($visibleif ?? []),
-                    ...[
-                        $key => strtolower((new ReflectionClass($type))->getShortName())
-                    ]
+    public function toForm(string $key, string $property = 'fields', array $visibleif = []): array
+    {
+        $result = [];
+        foreach ($this->types as $type) {
+            if (method_exists($type, $property)) {
+                $result =  [
+                    ...$result,
+                    ...array_map(
+                        fn($row) =>
+                        array_map(function ($field) use ($type, $visibleif, $key) {
+                            $field->visibleif =  [
+                                ...($field->visibleif ?? []),
+                                ...($visibleif ?? []),
+                                ...[
+                                    $key => strtolower((new ReflectionClass($type))->getShortName())
+                                ]
+                            ];
+                            return $field;
+                        }, $row),
+                        $type::$property()
+                    )
                 ];
-                return $field;
-            }, $type::$property()) : [], 
-        $this->types); 
-
+            }
+        }
+        return $result;
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return $this->types;
     }
     //TypeInterface | 
-    public function __get(string $name): string {
+    public function __get(string $name): string
+    {
         $name = strtolower($name);
         $search = array_values(array_filter($this->types, fn(string $type) =>  strtolower((new ReflectionClass($type))->getShortName()) == strtolower($name)));
-        if(count($search) == 0) {
+        if (count($search) == 0) {
             //throw new Exception(strtolower(basename($this->types[0])));
-            throw new WrongTypeException("Тип {$name} не существует в коллекции {$this->type}".PHP_EOL."Доступно типов:".count($this->types), 500);
+            throw new WrongTypeException("Тип {$name} не существует в коллекции {$this->type}" . PHP_EOL . "Доступно типов:" . count($this->types), 500);
         }
 
         return $search[0];
