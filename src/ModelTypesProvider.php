@@ -13,6 +13,7 @@ class ModelTypesProvider extends PackageServiceProvider
         $package
             ->name('laravel-model-types')
             ->hasConfigFile()
+            ->hasRoute('modeltypes')
             ->publishesServiceProvider('ModelTypeProvider')
             ->hasInstallCommand(function(InstallCommand $command) {
                 $command
