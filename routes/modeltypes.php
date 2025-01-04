@@ -15,7 +15,7 @@ Route::prefix('types')->name('types.')->group(function () {
         return $itemObj::fields();
     })->name('item.fields');
 
-    Route::get('/{type}', function (string $type, string $item) {
+    Route::get('/{type}', function (string $type) {
         abort_if(!Arr::has(Config::get("model-types"), $type), 404);
         return (new TypeCollection($type))->toSelect();
     })->name('item.show');
