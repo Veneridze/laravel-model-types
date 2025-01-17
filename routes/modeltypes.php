@@ -12,7 +12,7 @@ Route::prefix('types')->name('types.')->group(function () {
         abort_if(!Arr::has(Config::get("model-types"), $type), 404);
         $itemObj = (new TypeCollection($type))->$item;
         abort_if(!method_exists($itemObj, 'fields'), $type, 400);
-        return $itemObj::fields();
+        return array_map(fn($row) => array_map(fn($field) => $field->toArray(), $row), $itemObj::fields());
     })->name('item.fields');
 
     Route::get('/{type}', function (string $type) {
