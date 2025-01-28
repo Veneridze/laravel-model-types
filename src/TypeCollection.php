@@ -38,7 +38,7 @@ class TypeCollection implements Arrayable, ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $value = strtolower(basename($value));
+        $value = strtolower(strtolower((new ReflectionClass($value))->getShortName()));
         if (!isset($this->$value)) {
             $fail("Тип {$value} не существует в коллекции {$this->type}");
         }
@@ -100,7 +100,6 @@ class TypeCollection implements Arrayable, ValidationRule
         $name = strtolower($name);
         $search = array_values(array_filter($this->types, fn(string $type) => strtolower((new ReflectionClass($type))->getShortName()) == strtolower($name)));
         if (count($search) == 0) {
-            //throw new Exception(strtolower(basename($this->types[0])));
             throw new WrongTypeException("Тип {$name} не существует в коллекции {$this->type}" . PHP_EOL . "Доступно типов:" . count($this->types), 500);
         }
 

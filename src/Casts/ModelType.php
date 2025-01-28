@@ -1,10 +1,10 @@
 <?php
 namespace Veneridze\ModelTypes\Casts;
- 
- 
+
+
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
- 
+
 class ModelType implements CastsAttributes
 {
     /**
@@ -14,10 +14,10 @@ class ModelType implements CastsAttributes
      * @return array<string, mixed>
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): string
-    {        
+    {
         return $model->typeCollection()->$value;
     }
- 
+
     /**
      * Prepare the given value for storage.
      *
@@ -25,6 +25,6 @@ class ModelType implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): string
     {
-        return strtolower(basename($value));
+        return strtolower((new \ReflectionClass($value))->getShortName());
     }
 }
