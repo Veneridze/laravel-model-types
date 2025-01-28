@@ -44,12 +44,16 @@ class TypeCollection implements Arrayable, ValidationRule
         }
     }
 
-    public function toSelect(): array
+    public function toSelect(bool $lower = true): array
     {
-        return array_map(function ($type): array {
-            $short = strtolower((new ReflectionClass($type))->getShortName());
+        return array_map(function ($type) use ($lower): array {
+            if ($lower) {
+                $short = strtolower((new ReflectionClass($type))->getShortName());
+            } else {
+                $short = $type;//strtolower((new ReflectionClass($type))->getShortName());
+            }
             return [
-                "label" => property_exists($type, 'label') ? $type::$label :  $short,
+                "label" => property_exists($type, 'label') ? $type::$label : $short,
                 "value" => $short
             ];
         }, $this->types);
@@ -64,12 +68,12 @@ class TypeCollection implements Arrayable, ValidationRule
         $result = [];
         foreach ($this->types as $type) {
             if (method_exists($type, $property)) {
-                $result =  [
+                $result = [
                     ...$result,
                     ...array_map(
                         fn($row) =>
                         array_map(function ($field) use ($type, $visibleif, $key) {
-                            $field->visibleif =  [
+                            $field->visibleif = [
                                 ...($field->visibleif ?? []),
                                 ...($visibleif ?? []),
                                 ...[
@@ -94,7 +98,7 @@ class TypeCollection implements Arrayable, ValidationRule
     public function __get(string $name): string
     {
         $name = strtolower($name);
-        $search = array_values(array_filter($this->types, fn(string $type) =>  strtolower((new ReflectionClass($type))->getShortName()) == strtolower($name)));
+        $search = array_values(array_filter($this->types, fn(string $type) => strtolower((new ReflectionClass($type))->getShortName()) == strtolower($name)));
         if (count($search) == 0) {
             //throw new Exception(strtolower(basename($this->types[0])));
             throw new WrongTypeException("Тип {$name} не существует в коллекции {$this->type}" . PHP_EOL . "Доступно типов:" . count($this->types), 500);
