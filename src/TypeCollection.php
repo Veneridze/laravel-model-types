@@ -38,7 +38,7 @@ class TypeCollection implements Arrayable, ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $value = strtolower(strtolower((new ReflectionClass($value))->getShortName()));
+        $value = class_exists($value) ? strtolower(strtolower((new ReflectionClass($value))->getShortName())) : $value;
         if (!isset($this->$value)) {
             $fail("Тип {$value} не существует в коллекции {$this->type}");
         }
@@ -47,11 +47,7 @@ class TypeCollection implements Arrayable, ValidationRule
     public function toSelect(bool $lower = true): array
     {
         return array_map(function ($type) use ($lower): array {
-            if ($lower) {
-                $short = strtolower((new ReflectionClass($type))->getShortName());
-            } else {
-                $short = $type;//strtolower((new ReflectionClass($type))->getShortName());
-            }
+            $short = $lower ? strtolower((new ReflectionClass($type))->getShortName()) : $type;
             return [
                 "label" => property_exists($type, 'label') ? $type::$label : $short,
                 "value" => $short
@@ -76,9 +72,7 @@ class TypeCollection implements Arrayable, ValidationRule
                             $field->visibleif = [
                                 ...($field->visibleif ?? []),
                                 ...($visibleif ?? []),
-                                ...[
-                                    $key => strtolower((new ReflectionClass($type))->getShortName())
-                                ]
+                                $key => class_exists($type) ? strtolower((new ReflectionClass($type))->getShortName()) : $type
                             ];
                             return $field;
                         }, $row),
