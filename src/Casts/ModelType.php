@@ -25,6 +25,6 @@ class ModelType implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): string
     {
-        return strtolower((new \ReflectionClass($value))->getShortName());
+        return class_exists($value) ? strtolower((new \ReflectionClass($value))->getShortName()) : $value;
     }
 }
